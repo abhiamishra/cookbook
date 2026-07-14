@@ -13,3 +13,10 @@ out/
 # misc
 .DS_Store
 *.pem
+
+# local sqlite db
+/data
+
+# local planning docs, not for commit
+/plans
+/docs

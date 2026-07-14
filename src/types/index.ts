@@ -26,3 +26,20 @@ export type MacroResult = {
     fat_g: number;
   };
 };
+
+export type SavedRecipe = {
+  id: string;
+  slug: string;
+  name: string;
+  ingredients: Ingredient[];
+  macros: MacroResult;
+  createdAt: string;
+};
+
+export type RecipeSummary = {
+  id: string;
+  slug: string;
+  name: string;
+  createdAt: string;
+  totals: MacroResult["totals"];
+};

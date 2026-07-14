@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import type { Ingredient, MacroResult, Unit } from "@/types";
+import { useEffect, useState } from "react";
+import type { Ingredient, MacroResult, RecipeSummary, Unit } from "@/types";
+import MacroTable from "@/components/MacroTable";
 
 const UNITS: Unit[] = ["g", "oz", "cup", "tbsp", "tsp", "ml", "serving"];
 
@@ -10,6 +11,7 @@ function generateId() {
 }
 
 export default function Home() {
+  const [recipeName, setRecipeName] = useState("");
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState<Unit>("g");
@@ -17,6 +19,28 @@ export default function Home() {
   const [result, setResult] = useState<MacroResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
+
+  async function fetchRecipes() {
+    try {
+      const res = await fetch("/api/recipes");
+      if (!res.ok) return;
+      setRecipes(await res.json());
+    } catch {
+      // best-effort; the list simply stays empty
+    }
+  }
 
   function addIngredient() {
     if (!name.trim() || !amount.trim()) return;
@@ -27,17 +51,20 @@ export default function Home() {
     setName("");
     setAmount("");
     setResult(null);
+    setShareUrl(null);
   }
 
   function removeIngredient(id: string) {
     setIngredients((prev) => prev.filter((i) => i.id !== id));
     setResult(null);
+    setShareUrl(null);
   }
 
   async function calculateMacros() {
     if (ingredients.length === 0) return;
     setLoading(true);
     setError(null);
+    setShareUrl(null);
     try {
       const res = await fetch("/api/calculate-macros", {
         method: "POST",
@@ -54,6 +81,40 @@ export default function Home() {
     }
   }
 
+  async function saveAndShare() {
+    if (!recipeName.trim() || !result) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: recipeName.trim(), ingredients, macros: result }),
+      });
+      if (!res.ok) throw new Error("Failed to save recipe");
+      const { slug } = await res.json();
+      setShareUrl(`${window.location.origin}/r/${slug}`);
+      fetchRecipes();
+    } catch {
+      setSaveError("Couldn't save this recipe. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function copyShareUrl() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function copyRecipeLink(slug: string) {
+    await navigator.clipboard.writeText(`${window.location.origin}/r/${slug}`);
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug((s) => (s === slug ? null : s)), 2000);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") addIngredient();
   }
@@ -62,6 +123,15 @@ export default function Home() {
     <main className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-gray-900 mb-1">Cookbook</h1>
       <p className="text-gray-500 mb-8">Add your ingredients and get accurate macros.</p>
+
+      {/* Recipe name */}
+      <input
+        type="text"
+        placeholder="Recipe name (e.g. Chicken stir fry)"
+        value={recipeName}
+        onChange={(e) => setRecipeName(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
 
       {/* Input row */}
       <div className="flex gap-2 mb-4">
@@ -154,42 +224,85 @@ export default function Home() {
       {result && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Macros</h2>
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                  <th className="text-left px-4 py-3">Item</th>
-                  <th className="text-right px-4 py-3">Calories</th>
-                  <th className="text-right px-4 py-3">Protein</th>
-                  <th className="text-right px-4 py-3">Carbs</th>
-                  <th className="text-right px-4 py-3">Fat</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {result.items.map((item, i) => (
-                  <tr key={i} className="bg-white">
-                    <td className="px-4 py-3 text-gray-800">
-                      {item.name}
-                      <span className="text-gray-400 text-xs ml-1">
-                        {item.amount} {item.unit}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700">{item.calories}</td>
-                    <td className="px-4 py-3 text-right text-gray-700">{item.protein_g}g</td>
-                    <td className="px-4 py-3 text-right text-gray-700">{item.carbs_g}g</td>
-                    <td className="px-4 py-3 text-right text-gray-700">{item.fat_g}g</td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-semibold text-gray-900">
-                  <td className="px-4 py-3">Total</td>
-                  <td className="px-4 py-3 text-right">{result.totals.calories}</td>
-                  <td className="px-4 py-3 text-right">{result.totals.protein_g}g</td>
-                  <td className="px-4 py-3 text-right">{result.totals.carbs_g}g</td>
-                  <td className="px-4 py-3 text-right">{result.totals.fat_g}g</td>
-                </tr>
-              </tbody>
-            </table>
+          <MacroTable result={result} />
+
+          {/* Save & share */}
+          <div className="mt-4 bg-white border border-gray-200 rounded-lg px-4 py-3">
+            {!shareUrl ? (
+              <>
+                <button
+                  onClick={saveAndShare}
+                  disabled={saving || !recipeName.trim()}
+                  className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? "Saving..." : "Save & Share"}
+                </button>
+                {!recipeName.trim() && (
+                  <p className="mt-2 text-xs text-gray-400 text-center">
+                    Add a recipe name above to save and share it.
+                  </p>
+                )}
+                {saveError && (
+                  <p className="mt-2 text-xs text-red-600 text-center">{saveError}</p>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={shareUrl}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 bg-gray-50"
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  onClick={copyShareUrl}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                >
+                  {copied ? "Copied!" : "Copy link"}
+                </button>
+              </div>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Saved recipes */}
+      {recipes.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Your recipes</h2>
+          <ul className="space-y-2">
+            {recipes.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm"
+              >
+                <div>
+                  <p className="font-medium text-gray-800">{r.name}</p>
+                  <p className="text-gray-400 text-xs">
+                    {r.totals.calories} cal &middot;{" "}
+                    {new Date(r.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => copyRecipeLink(r.slug)}
+                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
+                  >
+                    {copiedSlug === r.slug ? "Copied!" : "Copy link"}
+                  </button>
+                  <a
+                    href={`/r/${r.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                  >
+                    View
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </main>

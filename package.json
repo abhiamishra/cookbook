@@ -2,6 +2,9 @@
   "name": "cookbook",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,11 +12,14 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.54.0",
+    "better-sqlite3": "^12.11.1",
+    "nanoid": "^5.1.16",
     "next": "^16.2.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
