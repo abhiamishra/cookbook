@@ -1,8 +1,32 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipeBySlug } from "@/lib/db";
 import RecipeCard from "@/components/RecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const recipe = getRecipeBySlug(slug);
+
+  if (!recipe) {
+    return { title: "Recipe not found" };
+  }
+
+  const { calories, protein_g, carbs_g, fat_g } = recipe.macros.totals;
+  const description = `${calories} cal · ${protein_g}g protein · ${carbs_g}g carbs · ${fat_g}g fat`;
+
+  return {
+    title: recipe.name,
+    description,
+    openGraph: { title: recipe.name, description },
+    twitter: { card: "summary", title: recipe.name, description },
+  };
+}
 
 export default async function SharedRecipePage({
   params,
