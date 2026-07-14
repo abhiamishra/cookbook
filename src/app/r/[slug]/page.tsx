@@ -24,7 +24,7 @@ export async function generateMetadata({
     title: recipe.name,
     description,
     openGraph: { title: recipe.name, description },
-    twitter: { card: "summary", title: recipe.name, description },
+    twitter: { card: "summary_large_image", title: recipe.name, description },
   };
 }
 
