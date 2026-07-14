@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from "react";
 import type { Ingredient, MacroResult, RecipeSummary, Unit } from "@/types";
-import MacroTable from "@/components/MacroTable";
+import RecipeCard from "@/components/RecipeCard";
+import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
+
+function slugify(text: string) {
+  return (
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "recipe"
+  );
+}
 
 const UNITS: Unit[] = ["g", "oz", "cup", "tbsp", "tsp", "ml", "serving"];
 
@@ -22,6 +33,7 @@ export default function Home() {
 
   const [saving, setSaving] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [savedSlug, setSavedSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -52,12 +64,14 @@ export default function Home() {
     setAmount("");
     setResult(null);
     setShareUrl(null);
+    setSavedSlug(null);
   }
 
   function removeIngredient(id: string) {
     setIngredients((prev) => prev.filter((i) => i.id !== id));
     setResult(null);
     setShareUrl(null);
+    setSavedSlug(null);
   }
 
   async function calculateMacros() {
@@ -65,6 +79,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setShareUrl(null);
+    setSavedSlug(null);
     try {
       const res = await fetch("/api/calculate-macros", {
         method: "POST",
@@ -94,6 +109,7 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to save recipe");
       const { slug } = await res.json();
       setShareUrl(`${window.location.origin}/r/${slug}`);
+      setSavedSlug(slug);
       fetchRecipes();
     } catch {
       setSaveError("Couldn't save this recipe. Please try again.");
@@ -220,14 +236,19 @@ export default function Home() {
         <p className="mt-4 text-sm text-red-600 text-center">{error}</p>
       )}
 
-      {/* Results table */}
+      {/* Results */}
       {result && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Macros</h2>
-          <MacroTable result={result} />
+          <RecipeCard
+            id="recipe-card"
+            name={recipeName.trim() || "Recipe"}
+            ingredients={ingredients}
+            macros={result}
+            showBranding
+          />
 
           {/* Save & share */}
-          <div className="mt-4 bg-white border border-gray-200 rounded-lg px-4 py-3">
+          <div className="mt-4 bg-white border border-gray-200 rounded-lg px-4 py-3 space-y-3">
             {!shareUrl ? (
               <>
                 <button
@@ -238,12 +259,12 @@ export default function Home() {
                   {saving ? "Saving..." : "Save & Share"}
                 </button>
                 {!recipeName.trim() && (
-                  <p className="mt-2 text-xs text-gray-400 text-center">
+                  <p className="text-xs text-gray-400 text-center">
                     Add a recipe name above to save and share it.
                   </p>
                 )}
                 {saveError && (
-                  <p className="mt-2 text-xs text-red-600 text-center">{saveError}</p>
+                  <p className="text-xs text-red-600 text-center">{saveError}</p>
                 )}
               </>
             ) : (
@@ -263,6 +284,10 @@ export default function Home() {
                 </button>
               </div>
             )}
+            <DownloadRecipeImageButton
+              targetId="recipe-card"
+              filename={`${savedSlug ?? slugify(recipeName)}-macros.png`}
+            />
           </div>
         </div>
       )}
