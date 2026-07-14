@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Ingredient, MacroResult, RecipeSummary, Unit } from "@/types";
 import RecipeCard from "@/components/RecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
+import Logo from "@/components/Logo";
 
 function slugify(text: string) {
   return (
@@ -137,7 +138,7 @@ export default function Home() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">Cookbook</h1>
+      <Logo className="h-10 w-auto mb-2" />
       <p className="text-gray-500 mb-8">Add your ingredients and get accurate macros.</p>
 
       {/* Recipe name */}
