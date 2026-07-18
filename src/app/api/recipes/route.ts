@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRecipe, listRecipes } from "@/lib/db";
+import { getSessionId, newSessionId, setSessionCookie } from "@/lib/session";
 import type { Ingredient, MacroResult } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -18,10 +19,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Macro results are required" }, { status: 400 });
   }
 
-  const recipe = createRecipe(name, ingredients, macros);
-  return NextResponse.json({ slug: recipe.slug });
+  const existingSessionId = getSessionId(req);
+  const ownerId = existingSessionId ?? newSessionId();
+
+  const recipe = createRecipe(name, ingredients, macros, ownerId);
+  const res = NextResponse.json({ slug: recipe.slug });
+  if (!existingSessionId) {
+    setSessionCookie(res, ownerId);
+  }
+  return res;
 }
 
-export async function GET() {
-  return NextResponse.json(listRecipes());
+export async function GET(req: NextRequest) {
+  const ownerId = getSessionId(req);
+  if (!ownerId) {
+    return NextResponse.json([]);
+  }
+  return NextResponse.json(listRecipes(ownerId));
 }

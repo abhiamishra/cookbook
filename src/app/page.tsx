@@ -296,7 +296,7 @@ export default function Home() {
       {/* Saved recipes */}
       {recipes.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent recipes</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Your recipes</h2>
           <ul className="space-y-2">
             {recipes.map((r) => (
               <li

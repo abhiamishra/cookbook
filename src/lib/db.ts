@@ -28,6 +28,11 @@ function getDb(): Database.Database {
     );
   `);
 
+  const columns = db.prepare(`PRAGMA table_info(recipes)`).all() as { name: string }[];
+  if (!columns.some((c) => c.name === "owner_id")) {
+    db.exec(`ALTER TABLE recipes ADD COLUMN owner_id TEXT`);
+  }
+
   global.__cookbookDb = db;
   return db;
 }
@@ -39,6 +44,7 @@ type RecipeRow = {
   ingredients: string;
   macros: string;
   created_at: string;
+  owner_id: string | null;
 };
 
 function rowToRecipe(row: RecipeRow): SavedRecipe {
@@ -55,18 +61,19 @@ function rowToRecipe(row: RecipeRow): SavedRecipe {
 export function createRecipe(
   name: string,
   ingredients: Ingredient[],
-  macros: MacroResult
+  macros: MacroResult,
+  ownerId: string
 ): SavedRecipe {
   const db = getDb();
   const insert = db.prepare(
-    `INSERT INTO recipes (id, slug, name, ingredients, macros) VALUES (?, ?, ?, ?, ?)`
+    `INSERT INTO recipes (id, slug, name, ingredients, macros, owner_id) VALUES (?, ?, ?, ?, ?, ?)`
   );
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const id = nanoid();
     const slug = nanoid(8);
     try {
-      insert.run(id, slug, name, JSON.stringify(ingredients), JSON.stringify(macros));
+      insert.run(id, slug, name, JSON.stringify(ingredients), JSON.stringify(macros), ownerId);
       return getRecipeBySlug(slug)!;
     } catch (err) {
       const isUniqueViolation =
@@ -85,11 +92,11 @@ export function getRecipeBySlug(slug: string): SavedRecipe | null {
   return row ? rowToRecipe(row) : null;
 }
 
-export function listRecipes(limit = 50): RecipeSummary[] {
+export function listRecipes(ownerId: string, limit = 50): RecipeSummary[] {
   const db = getDb();
   const rows = db
-    .prepare(`SELECT * FROM recipes ORDER BY created_at DESC LIMIT ?`)
-    .all(limit) as RecipeRow[];
+    .prepare(`SELECT * FROM recipes WHERE owner_id = ? ORDER BY created_at DESC LIMIT ?`)
+    .all(ownerId, limit) as RecipeRow[];
   return rows.map((row) => {
     const macros = JSON.parse(row.macros) as MacroResult;
     return {
