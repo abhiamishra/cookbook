@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipeBySlug } from "@/lib/db";
-import RecipeCard from "@/components/RecipeCard";
+import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
 
 export async function generateMetadata({
@@ -40,12 +40,13 @@ export default async function SharedRecipePage({
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
-      <RecipeCard
+      <ScaledRecipeCard
         id="recipe-card"
         name={recipe.name}
         ingredients={recipe.ingredients}
         macros={recipe.macros}
         createdAt={recipe.createdAt}
+        baseServings={recipe.servings}
         showBranding={false}
       />
 

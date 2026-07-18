@@ -32,6 +32,9 @@ function getDb(): Database.Database {
   if (!columns.some((c) => c.name === "owner_id")) {
     db.exec(`ALTER TABLE recipes ADD COLUMN owner_id TEXT`);
   }
+  if (!columns.some((c) => c.name === "servings")) {
+    db.exec(`ALTER TABLE recipes ADD COLUMN servings INTEGER NOT NULL DEFAULT 1`);
+  }
 
   global.__cookbookDb = db;
   return db;
@@ -45,6 +48,7 @@ type RecipeRow = {
   macros: string;
   created_at: string;
   owner_id: string | null;
+  servings: number;
 };
 
 function rowToRecipe(row: RecipeRow): SavedRecipe {
@@ -55,6 +59,7 @@ function rowToRecipe(row: RecipeRow): SavedRecipe {
     ingredients: JSON.parse(row.ingredients),
     macros: JSON.parse(row.macros),
     createdAt: row.created_at,
+    servings: row.servings,
   };
 }
 
@@ -62,18 +67,19 @@ export function createRecipe(
   name: string,
   ingredients: Ingredient[],
   macros: MacroResult,
-  ownerId: string
+  ownerId: string,
+  servings: number
 ): SavedRecipe {
   const db = getDb();
   const insert = db.prepare(
-    `INSERT INTO recipes (id, slug, name, ingredients, macros, owner_id) VALUES (?, ?, ?, ?, ?, ?)`
+    `INSERT INTO recipes (id, slug, name, ingredients, macros, owner_id, servings) VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const id = nanoid();
     const slug = nanoid(8);
     try {
-      insert.run(id, slug, name, JSON.stringify(ingredients), JSON.stringify(macros), ownerId);
+      insert.run(id, slug, name, JSON.stringify(ingredients), JSON.stringify(macros), ownerId, servings);
       return getRecipeBySlug(slug)!;
     } catch (err) {
       const isUniqueViolation =

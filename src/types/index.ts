@@ -34,6 +34,7 @@ export type SavedRecipe = {
   ingredients: Ingredient[];
   macros: MacroResult;
   createdAt: string;
+  servings: number;
 };
 
 export type RecipeSummary = {

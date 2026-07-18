@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Ingredient, MacroResult, RecipeSummary, Unit } from "@/types";
-import RecipeCard from "@/components/RecipeCard";
+import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
 import Logo from "@/components/Logo";
 
@@ -24,6 +24,7 @@ function generateId() {
 
 export default function Home() {
   const [recipeName, setRecipeName] = useState("");
+  const [servings, setServings] = useState(1);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState<Unit>("g");
@@ -105,7 +106,7 @@ export default function Home() {
       const res = await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: recipeName.trim(), ingredients, macros: result }),
+        body: JSON.stringify({ name: recipeName.trim(), ingredients, macros: result, servings }),
       });
       if (!res.ok) throw new Error("Failed to save recipe");
       const { slug } = await res.json();
@@ -142,13 +143,29 @@ export default function Home() {
       <p className="text-gray-500 mb-8">Add your ingredients and get accurate macros.</p>
 
       {/* Recipe name */}
-      <input
-        type="text"
-        placeholder="Recipe name (e.g. Chicken stir fry)"
-        value={recipeName}
-        onChange={(e) => setRecipeName(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
+      <div className="flex gap-2 mb-4 items-end">
+        <input
+          type="text"
+          placeholder="Recipe name (e.g. Chicken stir fry)"
+          value={recipeName}
+          onChange={(e) => setRecipeName(e.target.value)}
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <div className="flex flex-col items-start">
+          <label htmlFor="servings" className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">
+            Servings
+          </label>
+          <input
+            id="servings"
+            type="number"
+            min={1}
+            step={1}
+            value={servings}
+            onChange={(e) => setServings(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      </div>
 
       {/* Input row */}
       <div className="flex gap-2 mb-4">
@@ -240,11 +257,12 @@ export default function Home() {
       {/* Results */}
       {result && (
         <div className="mt-8">
-          <RecipeCard
+          <ScaledRecipeCard
             id="recipe-card"
             name={recipeName.trim() || "Recipe"}
             ingredients={ingredients}
             macros={result}
+            baseServings={servings}
             showBranding
           />
 

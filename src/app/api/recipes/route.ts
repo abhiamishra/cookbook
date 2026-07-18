@@ -19,10 +19,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Macro results are required" }, { status: 400 });
   }
 
+  const servings = Number.isInteger(body.servings) && body.servings > 0 ? body.servings : 1;
+
   const existingSessionId = getSessionId(req);
   const ownerId = existingSessionId ?? newSessionId();
 
-  const recipe = createRecipe(name, ingredients, macros, ownerId);
+  const recipe = createRecipe(name, ingredients, macros, ownerId, servings);
   const res = NextResponse.json({ slug: recipe.slug });
   if (!existingSessionId) {
     setSessionCookie(res, ownerId);
