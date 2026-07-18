@@ -1,4 +1,4 @@
-export type Unit = "g" | "oz" | "cup" | "tbsp" | "tsp" | "ml" | "serving";
+export type Unit = "g" | "oz" | "cup" | "tbsp" | "tsp" | "ml" | "serving" | "pc";
 
 export type Ingredient = {
   id: string;

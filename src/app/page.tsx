@@ -16,7 +16,7 @@ function slugify(text: string) {
   );
 }
 
-const UNITS: Unit[] = ["g", "oz", "cup", "tbsp", "tsp", "ml", "serving"];
+const UNITS: Unit[] = ["g", "oz", "cup", "tbsp", "tsp", "ml", "serving", "pc"];
 
 function generateId() {
   return Math.random().toString(36).slice(2);
