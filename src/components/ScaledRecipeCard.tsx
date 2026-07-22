@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Ingredient, MacroResult } from "@/types";
 import RecipeCard from "@/components/RecipeCard";
+import CopyMacrofactorDescriptionButton from "@/components/CopyMacrofactorDescriptionButton";
 import { scaleIngredients, scaleMacros } from "@/lib/scale";
 
 export default function ScaledRecipeCard({
@@ -24,6 +25,7 @@ export default function ScaledRecipeCard({
 }) {
   const [servings, setServings] = useState(baseServings);
   const factor = servings / baseServings;
+  const scaledIngredients = scaleIngredients(ingredients, factor);
 
   return (
     <div>
@@ -46,11 +48,14 @@ export default function ScaledRecipeCard({
       <RecipeCard
         id={id}
         name={name}
-        ingredients={scaleIngredients(ingredients, factor)}
+        ingredients={scaledIngredients}
         macros={scaleMacros(macros, factor)}
         createdAt={createdAt}
         showBranding={showBranding}
       />
+      <div className="mt-3">
+        <CopyMacrofactorDescriptionButton ingredients={scaledIngredients} />
+      </div>
     </div>
   );
 }
