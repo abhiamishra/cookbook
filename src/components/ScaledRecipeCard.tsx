@@ -33,14 +33,14 @@ export default function ScaledRecipeCard({
         <span className="text-sm font-medium text-gray-700">Servings</span>
         <button
           onClick={() => setServings((s) => Math.max(1, s - 1))}
-          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+          className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
         >
           −
         </button>
-        <span className="w-6 text-center text-sm font-medium text-gray-900">{servings}</span>
+        <span className="w-8 text-center text-sm font-medium text-gray-900">{servings}</span>
         <button
           onClick={() => setServings((s) => s + 1)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+          className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
         >
           +
         </button>

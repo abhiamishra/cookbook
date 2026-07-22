@@ -138,7 +138,7 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-10">
+    <main className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
       <Logo className="h-10 w-auto mb-2" />
       <p className="text-gray-500 mb-8">Add your ingredients and get accurate macros.</p>
 
@@ -152,7 +152,7 @@ export default function Home() {
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <div className="flex flex-col items-start">
-          <label htmlFor="servings" className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">
+          <label htmlFor="servings" className="text-xs uppercase tracking-wide text-gray-400 mb-0.5">
             Servings
           </label>
           <input
@@ -168,14 +168,14 @@ export default function Home() {
       </div>
 
       {/* Input row */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <input
           type="text"
           placeholder="Food item (e.g. chicken breast)"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 min-w-[140px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <input
           type="text"
@@ -213,7 +213,7 @@ export default function Home() {
               key={ing.id}
               className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm"
             >
-              <span className="text-gray-800">
+              <span className="text-gray-800 min-w-0 truncate">
                 <span className="font-medium">{ing.name}</span>
                 <span className="text-gray-400 ml-2">
                   {ing.amount} {ing.unit}
@@ -221,7 +221,7 @@ export default function Home() {
               </span>
               <button
                 onClick={() => removeIngredient(ing.id)}
-                className="text-gray-400 hover:text-red-500 transition-colors ml-4 text-lg leading-none"
+                className="text-gray-400 hover:text-red-500 transition-colors ml-4 shrink-0 text-lg leading-none p-2 -m-2"
               >
                 ×
               </button>
@@ -319,16 +319,16 @@ export default function Home() {
             {recipes.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm"
               >
-                <div>
-                  <p className="font-medium text-gray-800">{r.name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-gray-800 truncate">{r.name}</p>
                   <p className="text-gray-400 text-xs">
                     {r.totals.calories} cal &middot;{" "}
                     {new Date(r.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <button
                     onClick={() => copyRecipeLink(r.slug)}
                     className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"

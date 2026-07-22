@@ -17,8 +17,8 @@ export default function RecipeCard({
   showBranding?: boolean;
 }) {
   return (
-    <div id={id} className="bg-white p-6 rounded-lg">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">{name}</h1>
+    <div id={id} className="bg-white p-4 sm:p-6 rounded-lg">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 break-words">{name}</h1>
       {createdAt && (
         <p className="text-gray-500 mb-8">
           Shared recipe &middot;{" "}
@@ -35,10 +35,10 @@ export default function RecipeCard({
         {ingredients.map((ing) => (
           <li
             key={ing.id}
-            className="flex items-center bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm"
+            className="flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm"
           >
-            <span className="font-medium text-gray-800">{ing.name}</span>
-            <span className="text-gray-400 ml-2">
+            <span className="font-medium text-gray-800 min-w-0 truncate">{ing.name}</span>
+            <span className="text-gray-400 shrink-0 whitespace-nowrap">
               {ing.amount} {ing.unit}
             </span>
           </li>
