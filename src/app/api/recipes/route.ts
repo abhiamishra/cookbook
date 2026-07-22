@@ -26,9 +26,7 @@ export async function POST(req: NextRequest) {
 
   const recipe = createRecipe(name, ingredients, macros, ownerId, servings);
   const res = NextResponse.json({ slug: recipe.slug });
-  if (!existingSessionId) {
-    setSessionCookie(res, ownerId);
-  }
+  setSessionCookie(res, ownerId);
   return res;
 }
 
@@ -37,5 +35,7 @@ export async function GET(req: NextRequest) {
   if (!ownerId) {
     return NextResponse.json([]);
   }
-  return NextResponse.json(listRecipes(ownerId));
+  const res = NextResponse.json(listRecipes(ownerId));
+  setSessionCookie(res, ownerId);
+  return res;
 }
