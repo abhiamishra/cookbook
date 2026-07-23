@@ -7,6 +7,7 @@ import { SESSION_COOKIE } from "@/lib/session";
 import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
 import DeleteRecipeButton from "@/components/DeleteRecipeButton";
+import SaveCopyButton from "@/components/SaveCopyButton";
 
 export async function generateMetadata({
   params,
@@ -55,6 +56,11 @@ export default async function SharedRecipePage({
             Edit recipe
           </Link>
           <DeleteRecipeButton slug={recipe.slug} redirectTo="/" />
+        </div>
+      )}
+      {!isOwner && (
+        <div className="flex justify-end mb-2">
+          <SaveCopyButton slug={recipe.slug} />
         </div>
       )}
       <ScaledRecipeCard
