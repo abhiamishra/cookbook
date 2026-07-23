@@ -336,6 +336,12 @@ export default function Home() {
                     {copiedSlug === r.slug ? "Copied!" : "Copy link"}
                   </button>
                   <a
+                    href={`/r/${r.slug}/edit`}
+                    className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                  >
+                    Edit
+                  </a>
+                  <a
                     href={`/r/${r.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"

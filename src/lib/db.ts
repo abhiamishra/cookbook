@@ -60,6 +60,7 @@ function rowToRecipe(row: RecipeRow): SavedRecipe {
     macros: JSON.parse(row.macros),
     createdAt: row.created_at,
     servings: row.servings,
+    ownerId: row.owner_id,
   };
 }
 
@@ -88,6 +89,33 @@ export function createRecipe(
     }
   }
   throw new Error("Failed to generate a unique slug");
+}
+
+export function updateRecipe(
+  slug: string,
+  ownerId: string,
+  updates: {
+    name: string;
+    ingredients: Ingredient[];
+    macros: MacroResult;
+    servings: number;
+  }
+): SavedRecipe | null {
+  const db = getDb();
+  const existing = getRecipeBySlug(slug);
+  if (!existing || existing.ownerId !== ownerId) return null;
+
+  db.prepare(
+    `UPDATE recipes SET name = ?, ingredients = ?, macros = ?, servings = ? WHERE slug = ?`
+  ).run(
+    updates.name,
+    JSON.stringify(updates.ingredients),
+    JSON.stringify(updates.macros),
+    updates.servings,
+    slug
+  );
+
+  return getRecipeBySlug(slug);
 }
 
 export function getRecipeBySlug(slug: string): SavedRecipe | null {

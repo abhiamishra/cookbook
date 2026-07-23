@@ -35,6 +35,7 @@ export type SavedRecipe = {
   macros: MacroResult;
   createdAt: string;
   servings: number;
+  ownerId: string | null;
 };
 
 export type RecipeSummary = {

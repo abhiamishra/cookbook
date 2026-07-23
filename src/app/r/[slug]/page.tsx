@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getRecipeBySlug } from "@/lib/db";
+import { SESSION_COOKIE } from "@/lib/session";
 import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
 
@@ -38,8 +40,21 @@ export default async function SharedRecipePage({
 
   if (!recipe) notFound();
 
+  const sessionId = (await cookies()).get(SESSION_COOKIE)?.value ?? null;
+  const isOwner = sessionId !== null && sessionId === recipe.ownerId;
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+      {isOwner && (
+        <div className="flex justify-end mb-2">
+          <Link
+            href={`/r/${recipe.slug}/edit`}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+          >
+            Edit recipe
+          </Link>
+        </div>
+      )}
       <ScaledRecipeCard
         id="recipe-card"
         name={recipe.name}
