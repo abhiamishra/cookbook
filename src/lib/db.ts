@@ -118,6 +118,15 @@ export function updateRecipe(
   return getRecipeBySlug(slug);
 }
 
+export function deleteRecipe(slug: string, ownerId: string): boolean {
+  const db = getDb();
+  const existing = getRecipeBySlug(slug);
+  if (!existing || existing.ownerId !== ownerId) return false;
+
+  db.prepare(`DELETE FROM recipes WHERE slug = ?`).run(slug);
+  return true;
+}
+
 export function getRecipeBySlug(slug: string): SavedRecipe | null {
   const db = getDb();
   const row = db.prepare(`SELECT * FROM recipes WHERE slug = ?`).get(slug) as

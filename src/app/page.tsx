@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Ingredient, MacroResult, RecipeSummary, Unit } from "@/types";
 import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
+import DeleteRecipeButton from "@/components/DeleteRecipeButton";
 import Logo from "@/components/Logo";
 
 function slugify(text: string) {
@@ -24,7 +25,8 @@ function generateId() {
 
 export default function Home() {
   const [recipeName, setRecipeName] = useState("");
-  const [servings, setServings] = useState(1);
+  const [servingsInput, setServingsInput] = useState("1");
+  const servings = Math.max(1, parseInt(servingsInput, 10) || 1);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState<Unit>("g");
@@ -160,8 +162,9 @@ export default function Home() {
             type="number"
             min={1}
             step={1}
-            value={servings}
-            onChange={(e) => setServings(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            value={servingsInput}
+            onChange={(e) => setServingsInput(e.target.value)}
+            onBlur={() => setServingsInput(String(servings))}
             className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -349,6 +352,13 @@ export default function Home() {
                   >
                     View
                   </a>
+                  <DeleteRecipeButton
+                    slug={r.slug}
+                    onDeleted={() =>
+                      setRecipes((prev) => prev.filter((x) => x.slug !== r.slug))
+                    }
+                    className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors disabled:opacity-40"
+                  />
                 </div>
               </li>
             ))}

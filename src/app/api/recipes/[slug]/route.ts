@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRecipeBySlug, updateRecipe } from "@/lib/db";
+import { deleteRecipe, getRecipeBySlug, updateRecipe } from "@/lib/db";
 import { getSessionId } from "@/lib/session";
 import type { Ingredient, MacroResult } from "@/types";
 
@@ -44,4 +44,26 @@ export async function PATCH(
   }
 
   return NextResponse.json({ slug: updated.slug });
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const ownerId = getSessionId(req);
+  if (!ownerId) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+
+  const existing = getRecipeBySlug(slug);
+  if (!existing) {
+    return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+  }
+  if (existing.ownerId !== ownerId) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+
+  deleteRecipe(slug, ownerId);
+  return NextResponse.json({ ok: true });
 }

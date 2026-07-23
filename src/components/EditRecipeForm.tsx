@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Ingredient, MacroResult, SavedRecipe, Unit } from "@/types";
+import DeleteRecipeButton from "@/components/DeleteRecipeButton";
 
 const UNITS: Unit[] = ["g", "oz", "cup", "tbsp", "tsp", "ml", "serving", "pc"];
 
@@ -41,7 +42,8 @@ export default function EditRecipeForm({ recipe }: { recipe: Omit<SavedRecipe, "
   const router = useRouter();
 
   const [name, setName] = useState(recipe.name);
-  const [servings, setServings] = useState(recipe.servings);
+  const [servingsInput, setServingsInput] = useState(String(recipe.servings));
+  const servings = Math.max(1, parseInt(servingsInput, 10) || 1);
   const [rows, setRows] = useState<Row[]>(buildInitialRows(recipe));
 
   const [newName, setNewName] = useState("");
@@ -198,8 +200,9 @@ export default function EditRecipeForm({ recipe }: { recipe: Omit<SavedRecipe, "
             type="number"
             min={1}
             step={1}
-            value={servings}
-            onChange={(e) => setServings(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            value={servingsInput}
+            onChange={(e) => setServingsInput(e.target.value)}
+            onBlur={() => setServingsInput(String(servings))}
             className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -373,6 +376,11 @@ export default function EditRecipeForm({ recipe }: { recipe: Omit<SavedRecipe, "
         >
           Cancel
         </button>
+        <DeleteRecipeButton
+          slug={recipe.slug}
+          redirectTo="/"
+          className="px-4 py-2.5 rounded-lg font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-40"
+        />
       </div>
     </div>
   );

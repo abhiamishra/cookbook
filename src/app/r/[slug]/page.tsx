@@ -6,6 +6,7 @@ import { getRecipeBySlug } from "@/lib/db";
 import { SESSION_COOKIE } from "@/lib/session";
 import ScaledRecipeCard from "@/components/ScaledRecipeCard";
 import DownloadRecipeImageButton from "@/components/DownloadRecipeImageButton";
+import DeleteRecipeButton from "@/components/DeleteRecipeButton";
 
 export async function generateMetadata({
   params,
@@ -46,13 +47,14 @@ export default async function SharedRecipePage({
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
       {isOwner && (
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end items-center gap-4 mb-2">
           <Link
             href={`/r/${recipe.slug}/edit`}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
           >
             Edit recipe
           </Link>
+          <DeleteRecipeButton slug={recipe.slug} redirectTo="/" />
         </div>
       )}
       <ScaledRecipeCard
