@@ -142,7 +142,7 @@ export default function Home() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
       <Logo className="h-10 w-auto mb-2" />
-      <p className="text-gray-500 mb-8">Add your ingredients and get accurate macros.</p>
+      <p className="text-gray-500 mb-8">Add, create, and share your recipes within minutes.</p>
 
       {/* Recipe name */}
       <div className="flex gap-2 mb-4 items-end">
